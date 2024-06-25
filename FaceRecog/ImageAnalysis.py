@@ -32,13 +32,30 @@ def image_Analysis(image):
     return face_encoding
 
 
-while True:
-    unknown_encoding = image_Analysis('unknown.jpg')
+# Liste mit Namen die der Roboter Mag
+liked = ["Nhan"]
+
+
+if __name__ == '__main__':
+    unknown_encoding = image_Analysis('picture.jpg')
     loaded_encodings = load_encodings('known_faces.json')
+
+    found = 0
 
     results = []
     for name, encoding in loaded_encodings.items():
+        if unknown_encoding is None:
+            break
         result = face_recognition.compare_faces([encoding], unknown_encoding)
         if result[0]:
-            print(f"Das unbekannte Gesicht ist {name}.")
-    
+            if (name in liked):
+                found = 1
+            else:
+                found = 2
+
+    if found == 0:
+        print("randomManeuver")
+    elif found == 1:
+        print("stopMovement")
+    elif found == 2:
+        print("runAway")

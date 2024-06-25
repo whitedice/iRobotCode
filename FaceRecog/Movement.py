@@ -1,10 +1,6 @@
-import face_recognition
-import cv2
-import numpy as np
-import json
-import random
-from PIL import Image
 
+import subprocess
+import random
 import asyncio
 from irobot_edu_sdk.backend.bluetooth import Bluetooth
 from irobot_edu_sdk.robots import Create3
@@ -69,58 +65,32 @@ async def random_maneuver():
 
         await stop_movement()
 
-def resize_image(image, scale_percent):
-    width = int(image.shape[1] * scale_percent / 100)
-    height = int(image.shape[0] * scale_percent / 100)
-    dim = (width, height)
-    return cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 
-def load_encodings(filename):
-    with open(filename, 'r') as f:
-        data = json.load(f)
-    return {name: np.array(encoding) for name, encoding in data.items()}
+def run_script(script_name):
+    python37_path = 'C:\\Users\\eisen\\AppData\\Local\\Microsoft\\WindowsApps\\python3.7.exe' 
 
-def image_Analysis(image):
-    image = cv2.imread(image)
-    if image is None:
-        print("Das Bild konnte nicht gefunden werden.")
-        exit()
+    command = [python37_path, script_name]
 
-    small_image = resize_image(image, scale_percent= 50)
+    result = subprocess.run(command, text=True, capture_output=True)
 
-    _, compressed_image = cv2.imencode('.jpg', small_image, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
-    compressed_image = cv2.imdecode(compressed_image, cv2.IMREAD_COLOR)
+    if result.returncode == 0:
+        if (result.stdout == "runAway"):
+            runAway()
+        elif (result.stdout == "randomManeuver"):
+            random_maneuver()
+        elif (result.stdout == "stopMovement"):
+            stop_movement()
+        else:
+            # Script beenden
+            print("Das Skript wurde beendet.")
+            exit()
+            
+    else:
+        print("Fehler bei der Ausführung des Skripts:")
+        print(result.stderr)
 
-    face_encoding = face_recognition.face_encodings(compressed_image)[0]
-
-    return face_encoding
-
-# Liste mit Namen die der Roboter Mag
-liked = ["Nhan"]
+    return result.stdout
 
 
 while True:
-    unknown_encoding = image_Analysis('obama.jpg')
-    loaded_encodings = load_encodings('known_faces.json')
-
-    found = 0
-
-    results = []
-    for name, encoding in loaded_encodings.items():
-        if unknown_encoding is None:
-            break
-        result = face_recognition.compare_faces([encoding], unknown_encoding)
-        if result[0]:
-            if (name in liked):
-                found = 1
-            else:
-                found = 2
-
-    if found == 0:
-        print("Keine Übereinstimmung gefunden.")
-        asyncio.run(random_maneuver())
-    elif found == 1:
-        print("Der Roboter mag diese Person.")
-    elif found == 2:
-        print("Der Roboter mag diese Person nicht.")
-        asyncio.run(runAway())
+    run_script("ImageAnalysis.py")
