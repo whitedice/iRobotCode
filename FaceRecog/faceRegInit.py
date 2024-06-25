@@ -21,9 +21,9 @@ def image_Analysis(image):
         print("Das Bild konnte nicht gefunden werden.")
         exit()
 
-    small_image = resize_image(image, scale_percent = 50)
+    small_image = resize_image(image, scale_percent = 100)
 
-    _, compressed_image = cv2.imencode('.jpg', small_image, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+    _, compressed_image = cv2.imencode('.jpg', small_image, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
     compressed_image = cv2.imdecode(compressed_image, cv2.IMREAD_COLOR)
 
     face_encoding = face_recognition.face_encodings(compressed_image)[0]
@@ -32,10 +32,14 @@ def image_Analysis(image):
 
 biden_encoding = image_Analysis("biden.jpg")
 obama_encoding = image_Analysis("obama.jpg")
+nhan_encoding = image_Analysis("nhan.jpg")
+chris_encoding = image_Analysis("chris.jpg")
 
 known_faces = {
     "Biden": biden_encoding,
-    "Obama": obama_encoding
+    "Obama": obama_encoding,
+    "Nhan": nhan_encoding,
+    "Chris": chris_encoding
 }
 
 save_encodings(known_faces, "known_faces.json")
